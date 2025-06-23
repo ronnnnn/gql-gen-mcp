@@ -2,6 +2,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"log"
 	"os"
@@ -25,6 +26,7 @@ type Schema struct {
 	Name   string `yaml:"name"`
 	Dir    string `yaml:"dir"`
 	Output string `yaml:"output"`
+	Pkg    string `yaml:"package"`
 }
 
 func main() {
@@ -35,6 +37,7 @@ func main() {
 	for _, schemaConf := range schemaConfigurations {
 		generator := gen.NewGenerator(schemaConf.Schema,
 			gen.WithOutputDir(schemaConf.OutputDirectory),
+			gen.WithOutputPackage(schemaConf.OutputPackage),
 		)
 		err := generator.Generate()
 		if err != nil {
@@ -47,6 +50,7 @@ func main() {
 type SchemaConfiguration struct {
 	Schema          *ast.Schema
 	OutputDirectory string
+	OutputPackage   string
 }
 
 func parseYamlFile() ([]*SchemaConfiguration, error) {
@@ -90,6 +94,7 @@ func readSchema(schema Schema) (*SchemaConfiguration, error) {
 	return &SchemaConfiguration{
 		Schema:          gqlSchema,
 		OutputDirectory: schema.Output,
+		OutputPackage:   cmp.Or(schema.Pkg, "main"),
 	}, nil
 }
 

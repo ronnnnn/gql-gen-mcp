@@ -1,4 +1,4 @@
 schemas:
   - name: bookstore
-    dir: ./bookstore/graphql/definitions
-    output: ./mcp/bookstore
+    dir: ./example/bookstore-api/schema
+    output: ./example/mcp/bookstore
