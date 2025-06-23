@@ -22,6 +22,8 @@ type Options struct {
 	OutputDir string
 	// OutputPackage is the package name for the generated files.
 	OutputPackage string
+	// If true, only generate tools without the server code.
+	OnlyTools bool
 }
 
 func defaultGenOpts() *Options {
@@ -44,6 +46,13 @@ func WithOutputDir(dir string) Option {
 func WithOutputPackage(pkg string) Option {
 	return func(opts *Options) {
 		opts.OutputPackage = pkg
+	}
+}
+
+// WithOnlyTools sets the generator to only generate tools without the server code.
+func WithOnlyTools(onlyTools bool) Option {
+	return func(opts *Options) {
+		opts.OnlyTools = onlyTools
 	}
 }
 
@@ -121,6 +130,9 @@ func (g *Generator) generateTools(data TemplateData) error {
 }
 
 func (g *Generator) generateServer(data TemplateData) error {
+	if g.options.OnlyTools {
+		return nil
+	}
 	tpl, err := template.New("mcp-server-gql").Parse(serverTemplateContent)
 	if err != nil {
 		return fmt.Errorf("error parsing template: %w", err)

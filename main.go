@@ -23,10 +23,11 @@ type Root struct {
 
 // Schema represents a schema configuration in the YAML file.
 type Schema struct {
-	Name   string `yaml:"name"`
-	Dir    string `yaml:"dir"`
-	Output string `yaml:"output"`
-	Pkg    string `yaml:"package"`
+	Name      string `yaml:"name"`
+	Dir       string `yaml:"dir"`
+	Output    string `yaml:"output"`
+	Pkg       string `yaml:"package"`
+	OnlyTools bool   `yaml:"onlyTools"`
 }
 
 func main() {
@@ -38,6 +39,7 @@ func main() {
 		generator := gen.NewGenerator(schemaConf.Schema,
 			gen.WithOutputDir(schemaConf.OutputDirectory),
 			gen.WithOutputPackage(schemaConf.OutputPackage),
+			gen.WithOnlyTools(schemaConf.OnlyTools),
 		)
 		err := generator.Generate()
 		if err != nil {
@@ -51,6 +53,7 @@ type SchemaConfiguration struct {
 	Schema          *ast.Schema
 	OutputDirectory string
 	OutputPackage   string
+	OnlyTools       bool
 }
 
 func parseYamlFile() ([]*SchemaConfiguration, error) {
@@ -95,6 +98,7 @@ func readSchema(schema Schema) (*SchemaConfiguration, error) {
 		Schema:          gqlSchema,
 		OutputDirectory: schema.Output,
 		OutputPackage:   cmp.Or(schema.Pkg, "main"),
+		OnlyTools:       schema.OnlyTools,
 	}, nil
 }
 
