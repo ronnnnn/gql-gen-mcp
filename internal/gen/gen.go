@@ -133,6 +133,10 @@ func (g *Generator) generateServer(data TemplateData) error {
 	if g.options.OnlyTools {
 		return nil
 	}
+	fileExists := fileExists(fmt.Sprintf("%s/main.go", g.options.OutputDir))
+	if fileExists {
+		return nil
+	}
 	tpl, err := template.New("mcp-server-gql").Parse(serverTemplateContent)
 	if err != nil {
 		return fmt.Errorf("error parsing template: %w", err)
@@ -146,6 +150,14 @@ func (g *Generator) generateServer(data TemplateData) error {
 	}
 
 	return g.writeFile(buf, "main")
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return err == nil
 }
 
 func (g *Generator) writeFile(buffer bytes.Buffer, fileName string) error {
