@@ -2,6 +2,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"log"
 	"os"
@@ -22,9 +23,11 @@ type Root struct {
 
 // Schema represents a schema configuration in the YAML file.
 type Schema struct {
-	Name   string `yaml:"name"`
-	Dir    string `yaml:"dir"`
-	Output string `yaml:"output"`
+	Name      string `yaml:"name"`
+	Dir       string `yaml:"dir"`
+	Output    string `yaml:"output"`
+	Pkg       string `yaml:"package"`
+	OnlyTools bool   `yaml:"onlyTools"`
 }
 
 func main() {
@@ -35,6 +38,8 @@ func main() {
 	for _, schemaConf := range schemaConfigurations {
 		generator := gen.NewGenerator(schemaConf.Schema,
 			gen.WithOutputDir(schemaConf.OutputDirectory),
+			gen.WithOutputPackage(schemaConf.OutputPackage),
+			gen.WithOnlyTools(schemaConf.OnlyTools),
 		)
 		err := generator.Generate()
 		if err != nil {
@@ -47,6 +52,8 @@ func main() {
 type SchemaConfiguration struct {
 	Schema          *ast.Schema
 	OutputDirectory string
+	OutputPackage   string
+	OnlyTools       bool
 }
 
 func parseYamlFile() ([]*SchemaConfiguration, error) {
@@ -89,12 +96,14 @@ func readSchema(schema Schema) (*SchemaConfiguration, error) {
 	}
 	return &SchemaConfiguration{
 		Schema:          gqlSchema,
-		OutputDirectory: schema.Output,
+		OutputDirectory: cmp.Or(schema.Output, "."),
+		OutputPackage:   cmp.Or(schema.Pkg, "main"),
+		OnlyTools:       schema.OnlyTools,
 	}, nil
 }
 
 func schemaText(schema Schema) (string, error) {
-	dirEntry, err := os.ReadDir(schema.Dir)
+	dirEntry, err := os.ReadDir(cmp.Or(schema.Dir, "."))
 	if err != nil {
 		return "", fmt.Errorf("error while reading directory: %s %w", schema.Dir, err)
 	}

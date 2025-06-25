@@ -20,6 +20,10 @@ import (
 type Options struct {
 	// OutputDir is the directory where the generated files will be saved.
 	OutputDir string
+	// OutputPackage is the package name for the generated files.
+	OutputPackage string
+	// If true, only generate tools without the server code.
+	OnlyTools bool
 }
 
 func defaultGenOpts() *Options {
@@ -35,6 +39,20 @@ type Option func(*Options)
 func WithOutputDir(dir string) Option {
 	return func(opts *Options) {
 		opts.OutputDir = dir
+	}
+}
+
+// WithOutputPackage sets the output package name for the generated files.
+func WithOutputPackage(pkg string) Option {
+	return func(opts *Options) {
+		opts.OutputPackage = pkg
+	}
+}
+
+// WithOnlyTools sets the generator to only generate tools without the server code.
+func WithOnlyTools(onlyTools bool) Option {
+	return func(opts *Options) {
+		opts.OnlyTools = onlyTools
 	}
 }
 
@@ -67,6 +85,7 @@ func NewGenerator(schema *ast.Schema, options ...Option) *Generator {
 // Generate generates the code based on the provided schema and options.
 func (g *Generator) Generate() error {
 	data := TemplateData{
+		Pkg:   g.options.OutputPackage,
 		Tools: g.tools,
 	}
 
@@ -74,7 +93,7 @@ func (g *Generator) Generate() error {
 	if err != nil {
 		return fmt.Errorf("error generating tools: %w", err)
 	}
-	err = g.generateServer()
+	err = g.generateServer(data)
 	if err != nil {
 		return fmt.Errorf("error generating server: %w", err)
 	}
@@ -83,6 +102,7 @@ func (g *Generator) Generate() error {
 
 // TemplateData represents the data structure used in the template.
 type TemplateData struct {
+	Pkg   string
 	Tools []tools.Tool
 }
 
@@ -109,7 +129,10 @@ func (g *Generator) generateTools(data TemplateData) error {
 	return g.writeFile(buf, "tools")
 }
 
-func (g *Generator) generateServer() error {
+func (g *Generator) generateServer(data TemplateData) error {
+	if g.options.OnlyTools {
+		return nil
+	}
 	fileExists := fileExists(fmt.Sprintf("%s/main.go", g.options.OutputDir))
 	if fileExists {
 		return nil
@@ -121,7 +144,7 @@ func (g *Generator) generateServer() error {
 
 	// Create a buffer to hold the template output
 	var buf bytes.Buffer
-	err = tpl.Execute(&buf, g.tools)
+	err = tpl.Execute(&buf, data)
 	if err != nil {
 		return fmt.Errorf("error executing template: %w", err)
 	}

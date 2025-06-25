@@ -21,6 +21,14 @@ schemas:
     output: ./mcp/bookstore
 ```
 
+| Field     | Description                                                      | Required | Default |
+|-----------|------------------------------------------------------------------|----------|---------|
+| name      | A unique name for the configuration, used for identification.    | No       | ``      |
+| dir       | The directory containing the GraphQL schema definitions.         | No       | `./`    |
+| output    | The output directory for the generated server and tools.         | No       | `./`    |
+| package   | The package name for the generated server and tools.             | No       | `main`  |
+| onlyTools | If `true`, generates only the tools and skips server generation. | No       | `false` |
+
 ## Run
 
 Run the gql-gen-mcp tool in the directory where you've defined your `.gql-gen-mcp.yaml` file. Note that the `main.go` of your server is only generated once, such that you can configure the server to your needs.
