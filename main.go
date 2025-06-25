@@ -96,14 +96,14 @@ func readSchema(schema Schema) (*SchemaConfiguration, error) {
 	}
 	return &SchemaConfiguration{
 		Schema:          gqlSchema,
-		OutputDirectory: schema.Output,
+		OutputDirectory: cmp.Or(schema.Output, "."),
 		OutputPackage:   cmp.Or(schema.Pkg, "main"),
 		OnlyTools:       schema.OnlyTools,
 	}, nil
 }
 
 func schemaText(schema Schema) (string, error) {
-	dirEntry, err := os.ReadDir(schema.Dir)
+	dirEntry, err := os.ReadDir(cmp.Or(schema.Dir, "."))
 	if err != nil {
 		return "", fmt.Errorf("error while reading directory: %s %w", schema.Dir, err)
 	}
